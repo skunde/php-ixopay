@@ -600,7 +600,7 @@ class Client {
         $curl = new CurlClient();
         $curl ->setCustomHeaders($this->customRequestHeaders)
             ->setCustomCurlOptions($this->customCurlOptions);
-        $curl->signJson($sharedSecret, $url, $jsonBody, $type)
+        $curl->signJson($sharedSecret, $url, $jsonBody, $type, false, true)
              ->setAuthentication($username, $password);
 
         if($get){
