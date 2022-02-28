@@ -259,6 +259,10 @@ class JsonParser {
         }
 
         if ($this->arrGet($json, 'message') || $this->arrGet($json, 'code')) {
+            $result->setErrorMessage($this->arrGet($json, 'message'));
+            $result->setErrorCode($this->arrGet($json, 'code'));
+            $result->setAdapterMessage($this->arrGet($json, 'adapterMessage'));
+            $result->setAdapterCode($this->arrGet($json, 'adapterCode'));
             $result->addError(
                 new Error(
                     $this->arrGet($json, 'message'),
