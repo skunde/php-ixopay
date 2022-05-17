@@ -61,6 +61,7 @@ class JsonParser {
         $result->setReturnType($this->arrGet($json, 'returnType'));
         $result->setRedirectType($this->arrGet($json, 'redirectType'));
         $result->setRedirectUrl($this->arrGet($json, 'redirectUrl'));
+        $result->setRedirectQRCode($this->arrGet($json, 'redirectQRCode'));
         $result->setHtmlContent($this->arrGet($json, 'htmlContent'));
         $result->setPaymentDescriptor($this->arrGet($json, 'paymentDescriptor'));
         $result->setPaymentMethod($this->arrGet($json, 'paymentMethod'));
@@ -430,8 +431,8 @@ class JsonParser {
      */
     protected function parseError($data){
         $error = new Error(
-            $this->arrGet($data, 'errorMessage'),
-            $this->arrGet($data, 'errorCode'),
+            $this->arrGet($data, 'errorMessage') ?: $this->arrGet($data, 'message'),
+            $this->arrGet($data, 'errorCode') ?: $this->arrGet($data, 'code'),
             $this->arrGet($data, 'adapterMessage'),
             $this->arrGet($data, 'adapterCode')
         );
