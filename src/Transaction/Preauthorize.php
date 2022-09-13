@@ -16,6 +16,8 @@ use Ixopay\Client\Transaction\Base\ItemsTrait;
 use Ixopay\Client\Transaction\Base\OffsiteInterface;
 use Ixopay\Client\Transaction\Base\OffsiteTrait;
 use Ixopay\Client\Transaction\Base\PayByLinkTrait;
+use Ixopay\Client\Transaction\Base\DccDataInterface;
+use Ixopay\Client\Transaction\Base\DccDataTrait;
 use Ixopay\Client\Transaction\Base\ScheduleInterface;
 use Ixopay\Client\Transaction\Base\ScheduleTrait;
 use Ixopay\Client\Transaction\Base\TransactionSplitsInterface;
@@ -37,7 +39,8 @@ class Preauthorize extends AbstractTransactionWithReference
                               OffsiteInterface,
                               ScheduleInterface,
                               ThreeDSecureInterface,
-                              IndicatorInterface
+                              IndicatorInterface,
+                              DccDataInterface
 {
 
     use AddToCustomerProfileTrait;
@@ -50,12 +53,13 @@ class Preauthorize extends AbstractTransactionWithReference
     use ThreeDSecureTrait;
     use PayByLinkTrait;
     use IndicatorTrait;
+    use DccDataTrait;
 
     const TRANSACTION_INDICATOR_SINGLE = 'SINGLE';
     const TRANSACTION_INDICATOR_INITIAL = 'INITIAL';
     const TRANSACTION_INDICATOR_RECURRING = 'RECURRING';
     const TRANSACTION_INDICATOR_CARDONFILE = 'CARDONFILE';
-    const TRANSACTION_INDICATOR_CARDONFILE_MERCHANT = 'CARDONFILE_MERCHANT';
+    const TRANSACTION_INDICATOR_CARDONFILE_MERCHANT = 'CARDONFILE-MERCHANT-INITIATED';
 
     /** @var string */
     protected $transactionToken;

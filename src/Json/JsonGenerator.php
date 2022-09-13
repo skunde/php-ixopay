@@ -19,6 +19,7 @@ use Ixopay\Client\Schedule\ScheduleData;
 use Ixopay\Client\Schedule\ScheduleWithTransaction;
 use Ixopay\Client\Schedule\StartSchedule;
 use Ixopay\Client\Transaction\Base\AbstractTransaction;
+use Ixopay\Client\Transaction\Base\DccDataInterface;
 use Ixopay\Client\Transaction\Capture;
 use Ixopay\Client\Transaction\Debit;
 use Ixopay\Client\Transaction\Deregister;
@@ -101,6 +102,7 @@ class JsonGenerator {
 
         switch($action){
             case Client::SCHEDULE_ACTION_START:
+            case Client::SCHEDULE_ACTION_UPDATE:
                 /* backwards compatible */
                 if($scheduleData instanceof ScheduleData){
                     $json = [
@@ -110,7 +112,8 @@ class JsonGenerator {
                         'periodLength' => $scheduleData->getPeriodLength(),
                         'periodUnit' => $scheduleData->getPeriodUnit(),
                         'startDateTime' => $scheduleData->getStartDateTimeFormatted(\DateTime::ATOM),
-                        'merchantMetaData' => $scheduleData->getMerchantMetaData()
+                        'merchantMetaData' => $scheduleData->getMerchantMetaData(),
+                        'callbackUrl' => $scheduleData->getCallbackUrl(),
                     ];
                 } else {
                     /** @var StartSchedule $scheduleData */
@@ -170,7 +173,7 @@ class JsonGenerator {
 
         $this->updateData($transaction, $data);
 
-        return $data;
+        return $this->addRequestDcc($data, $transaction);
     }
 
     /**
@@ -261,6 +264,7 @@ class JsonGenerator {
             'callbackUrl' => $transaction->getCallbackUrl(),
             'transactionToken' => $transaction->getTransactionToken(),
             'description' => $transaction->getDescription(),
+            'transactionIndicator' => $transaction->getTransactionIndicator(),
             'customer' => $this->createCustomer($transaction->getCustomer()),
             'schedule' => $this->createSchedule($transaction->getSchedule()),
             'customerProfileData' => $this->createAddToCustomerProfile($transaction->getCustomerProfileData()),
@@ -537,7 +541,8 @@ class JsonGenerator {
             'periodLength' => $schedule->getPeriodLength(),
             'periodUnit' => $schedule->getPeriodUnit(),
             'startDateTime' => $schedule->getStartDateTimeFormatted(\DateTime::ATOM),
-            'merchantMetaData' => $schedule->getMerchantMetaData()
+            'merchantMetaData' => $schedule->getMerchantMetaData(),
+            'callbackUrl'   => $schedule->getCallbackUrl()
         ];
 
         return $data;
@@ -711,5 +716,48 @@ class JsonGenerator {
         if ($payByLinkData = $transaction->getPayByLinkData()) {
             $data['payByLink'] = $this->createPayByLinkData($payByLinkData);
         }
+    }
+
+    private function addRequestDcc(array $data, DccDataInterface $transaction)
+    {
+        if ($transaction->getRequestDcc()) {
+            $data['requestDcc'] = true;
+        }
+
+        if (!$transaction->getDccData()) {
+            return $data;
+        }
+
+        $dccData = [];
+        if (!empty($transaction->getDccData()->getRemoteIdentifier())) {
+            $dccData['remoteIdentifier'] = $transaction->getDccData()->getRemoteIdentifier();
+        }
+        if (!empty($transaction->getDccData()->getOriginalAmount())) {
+            $dccData['originalAmount'] = $transaction->getDccData()->getOriginalAmount();
+        }
+        if (!empty($transaction->getDccData()->getOriginalCurrency())) {
+            $dccData['originalCurrency'] = $transaction->getDccData()->getOriginalCurrency();
+        }
+        if (!empty($transaction->getDccData()->getConvertedAmount())) {
+            $dccData['convertedAmount'] = $transaction->getDccData()->getConvertedAmount();
+        }
+        if (!empty($transaction->getDccData()->getConvertedCurrency())) {
+            $dccData['convertedCurrency'] = $transaction->getDccData()->getConvertedCurrency();
+        }
+        if (!empty($transaction->getDccData()->getConversionRate())) {
+            $dccData['conversionRate'] = $transaction->getDccData()->getConversionRate();
+        }
+        if (!empty($transaction->getDccData()->getSelectedCurrency())) {
+            $dccData['selectedCurrency'] = $transaction->getDccData()->getSelectedCurrency();
+        }
+        if (!empty($transaction->getDccData()->getMarkUp())) {
+            $dccData['markUp'] = $transaction->getDccData()->getMarkUp();
+        }
+
+        if (!empty($dccData)) {
+            $data['dccData'] = $dccData;
+        }
+
+        return $data;
     }
 }
