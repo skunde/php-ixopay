@@ -13,13 +13,19 @@ use Ixopay\Client\Transaction\Base\IndicatorInterface;
 use Ixopay\Client\Transaction\Base\IndicatorTrait;
 use Ixopay\Client\Transaction\Base\ItemsInterface;
 use Ixopay\Client\Transaction\Base\ItemsTrait;
+use Ixopay\Client\Transaction\Base\LevelTwoAndThreeDataInterface;
+use Ixopay\Client\Transaction\Base\LevelTwoAndThreeDataTrait;
 use Ixopay\Client\Transaction\Base\OffsiteInterface;
 use Ixopay\Client\Transaction\Base\OffsiteTrait;
 use Ixopay\Client\Transaction\Base\PayByLinkTrait;
 use Ixopay\Client\Transaction\Base\DccDataInterface;
 use Ixopay\Client\Transaction\Base\DccDataTrait;
+use Ixopay\Client\Transaction\Base\ReferenceSchemeTransactionIdentifierInterface;
+use Ixopay\Client\Transaction\Base\ReferenceSchemeTransactionIdentifierTrait;
 use Ixopay\Client\Transaction\Base\ScheduleInterface;
 use Ixopay\Client\Transaction\Base\ScheduleTrait;
+use Ixopay\Client\Transaction\Base\SurchargeInterface;
+use Ixopay\Client\Transaction\Base\SurchargeTrait;
 use Ixopay\Client\Transaction\Base\TransactionSplitsInterface;
 use Ixopay\Client\Transaction\Base\TransactionSplitsTrait;
 use Ixopay\Client\Transaction\Base\ThreeDSecureInterface;
@@ -40,7 +46,10 @@ class Preauthorize extends AbstractTransactionWithReference
                               ScheduleInterface,
                               ThreeDSecureInterface,
                               IndicatorInterface,
-                              DccDataInterface
+                              DccDataInterface,
+                              SurchargeInterface,
+                              ReferenceSchemeTransactionIdentifierInterface,
+                              LevelTwoAndThreeDataInterface
 {
 
     use AddToCustomerProfileTrait;
@@ -54,6 +63,9 @@ class Preauthorize extends AbstractTransactionWithReference
     use PayByLinkTrait;
     use IndicatorTrait;
     use DccDataTrait;
+    use SurchargeTrait;
+    use ReferenceSchemeTransactionIdentifierTrait;
+    use LevelTwoAndThreeDataTrait;
 
     const TRANSACTION_INDICATOR_SINGLE = 'SINGLE';
     const TRANSACTION_INDICATOR_INITIAL = 'INITIAL';
@@ -69,6 +81,9 @@ class Preauthorize extends AbstractTransactionWithReference
 
     /** @var string */
     protected $language;
+
+    /** @var int */
+    protected $captureInMinutes = 0;
 
     /**
      * @return string
@@ -119,5 +134,35 @@ class Preauthorize extends AbstractTransactionWithReference
     public function setLanguage($language)
     {
         $this->language = $language;
+    }
+
+    /**
+     * Get auto-capture in minutes.
+     *
+     * Returns 0 by default, indicating no auto-capture shall be performed.
+     *
+     * @return int
+     */
+    public function getCaptureInMinutes()
+    {
+        return $this->captureInMinutes;
+    }
+
+    /**
+     * Set auto-capture in minutes.
+     *
+     * Provided value must be an int and equal or greater 0.
+     * A value of 0 means no capture shall be performed automatically.
+     * A value greater zero, requests the gateway to schedule a capture
+     * automatically after n minutes.
+     *
+     * @param  int  $captureInMinutes
+     * @return Preauthorize
+     */
+    public function setCaptureInMinutes($captureInMinutes)
+    {
+        $this->captureInMinutes = $captureInMinutes;
+
+        return $this;
     }
 }

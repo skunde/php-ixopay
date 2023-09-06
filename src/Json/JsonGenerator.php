@@ -151,25 +151,32 @@ class JsonGenerator {
     protected function createDebit($transaction, $language){
         /** @var Debit $transaction */
         $data = [
-            'referenceUuid' => $transaction->getReferenceUuid(),
-            'amount' => (string)$transaction->getAmount(),
-            'currency' => $transaction->getCurrency(),
-            'successUrl' => $transaction->getSuccessUrl(),
-            'cancelUrl' => $transaction->getCancelUrl(),
-            'errorUrl' => $transaction->getErrorUrl(),
-            'callbackUrl' => $transaction->getCallbackUrl(),
-            'transactionToken' => $transaction->getTransactionToken(),
-            'description' => $transaction->getDescription(),
-            'items' => $this->createItems($transaction->getItems()),
-            'splits' => $this->createSplits($transaction->getTransactionSplits()),
-            'withRegister' => $transaction->isWithRegister(),
+            'referenceUuid'        => $transaction->getReferenceUuid(),
+            'amount'               => (string)$transaction->getAmount(),
+            'currency'             => $transaction->getCurrency(),
+            'successUrl'           => $transaction->getSuccessUrl(),
+            'cancelUrl'            => $transaction->getCancelUrl(),
+            'errorUrl'             => $transaction->getErrorUrl(),
+            'callbackUrl'          => $transaction->getCallbackUrl(),
+            'transactionToken'     => $transaction->getTransactionToken(),
+            'description'          => $transaction->getDescription(),
+            'items'                => $this->createItems($transaction->getItems()),
+            'splits'               => $this->createSplits($transaction->getTransactionSplits()),
+            'withRegister'         => $transaction->isWithRegister(),
             'transactionIndicator' => $transaction->getTransactionIndicator(),
-            'customer' => $this->createCustomer($transaction->getCustomer()),
-            'schedule' => $this->createSchedule($transaction->getSchedule()),
-            'customerProfileData' => $this->createAddToCustomerProfile($transaction->getCustomerProfileData()),
-            'threeDSecureData' => $this->createThreeDSecureData($transaction->getThreeDSecureData()),
-            'language' => $language,
+            'customer'             => $this->createCustomer($transaction->getCustomer()),
+            'schedule'             => $this->createSchedule($transaction->getSchedule()),
+            'customerProfileData'  => $this->createAddToCustomerProfile($transaction->getCustomerProfileData()),
+            'threeDSecureData'     => $this->createThreeDSecureData($transaction->getThreeDSecureData()),
+            'language'             => $language,
+            'referenceSchemeTransactionIdentifier' => $transaction->getReferenceSchemeTransactionIdentifier(),
+            'surchargeAmount'      => $transaction->getSurchargeAmount(),
         ];
+
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
+        }
 
         $this->updateData($transaction, $data);
 
@@ -184,14 +191,21 @@ class JsonGenerator {
      *
      * @return array
      */
-    protected function createPreauthorize($transaction, $language){
+    protected function createPreauthorize($transaction, $language)
+    {
         /** @var Preauthorize $transaction */
-        return $this->createDebit($transaction, $language);
+        $txData = $this->createDebit($transaction, $language);
+
+        if($autoCapture = $transaction->getCaptureInMinutes()) {
+            $txData['captureInMinutes'] = $autoCapture;
+        }
+
+        return $txData;
     }
 
     protected function createIncrementalAuthorization($transaction, $language) {
         /** @var IncrementalAuthorization $transaction */
-        return [
+        $data = [
             'referenceUuid' => $transaction->getReferenceUuid(),
             'amount' => (string)$transaction->getAmount(),
             'currency' => $transaction->getCurrency(),
@@ -204,6 +218,13 @@ class JsonGenerator {
             'transactionIndicator' => $transaction->getTransactionIndicator(),
             'language' => $language,
         ];
+
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
+        }
+
+        return $data;
     }
 
     /**
@@ -225,6 +246,11 @@ class JsonGenerator {
 
         if ($transaction->getDescription()) {
             $data['description'] = $transaction->getDescription();
+        }
+
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
         }
 
         return $data;
@@ -272,6 +298,11 @@ class JsonGenerator {
             'language' => $language,
         ];
 
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
+        }
+
         $this->updateData($transaction, $data);
 
         return $data;
@@ -288,6 +319,7 @@ class JsonGenerator {
         /** @var Deregister $transaction */
         return [
             'referenceUuid' => $transaction->getReferenceUuid(),
+            'transactionToken' => $transaction->getTransactionToken()
         ];
     }
 
@@ -300,7 +332,7 @@ class JsonGenerator {
      */
     protected function createRefund($transaction){
         /** @var Refund $transaction */
-        return [
+        $data = [
             'referenceUuid' => $transaction->getReferenceUuid(),
             'amount' => (string)$transaction->getAmount(),
             'currency' => $transaction->getCurrency(),
@@ -310,6 +342,13 @@ class JsonGenerator {
             'items' => $this->createItems($transaction->getItems()),
             'splits' => $this->createSplits($transaction->getTransactionSplits()),
         ];
+
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
+        }
+
+        return $data;
     }
 
     /**
@@ -339,6 +378,11 @@ class JsonGenerator {
             'transactionIndicator' => $transaction->getTransactionIndicator(),
         ];
 
+        if ($transaction->getL2L3Data()) {
+            $l2l3Data = $transaction->getL2L3Data();
+            $data['l2l3Data'] = $this->stringifyL2L3Data($l2l3Data);
+        }
+
         $this->updateData($transaction, $data);
 
         return $data;
@@ -361,6 +405,7 @@ class JsonGenerator {
 
         /** @var Item $item */
         foreach($items as $item){
+            $itemL2L3Data = $item->getL2L3Data();
             $data[] = [
                 'identification' => $item->getIdentification(),
                 'name' => $item->getName(),
@@ -369,6 +414,7 @@ class JsonGenerator {
                 'price' => $item->getPrice(),
                 'currency' => $item->getCurrency(),
                 'extraData' => $this->stringifyExtraData($item->getExtraData()),
+                'l2l3Data' => $this->stringifyL2L3Data($itemL2L3Data),
             ];
         }
 
@@ -467,6 +513,7 @@ class JsonGenerator {
             $data['paymentData']['cardData'] = [
                 'brand' => $customer->getBrand(),
                 'cardHolder' => $customer->getCardHolder(),
+                'binDigits' => $customer->getBinDigits(),
                 'firstSixDigits' => $customer->getFirstSixDigits(),
                 'lastFourDigits' => $customer->getLastFourDigits(),
                 'expiryMonth' => $customer->getExpiryMonth(),
@@ -583,8 +630,9 @@ class JsonGenerator {
             return null;
         }
 
-        $data = [
+        return [
             '3dsecure' => $threeDSecureData->getThreeDSecure(),
+            'schemeId' => $threeDSecureData->getSchemeId(),
             'channel' => $threeDSecureData->getChannel(),
             'authenticationIndicator' => $threeDSecureData->getAuthenticationIndicator(),
             'cardholderAuthenticationMethod' => $threeDSecureData->getCardholderAuthenticationMethod(),
@@ -650,9 +698,8 @@ class JsonGenerator {
             'sdkMaxTimeout' => $threeDSecureData->getSdkMaxTimeout(),
             'sdkReferenceNumber' => $threeDSecureData->getSdkReferenceNumber(),
             'sdkTransID' => $threeDSecureData->getSdkTransID(),
+            'exemptionIndicator' => $threeDSecureData->getExemptionIndicator(),
         ];
-
-        return $data;
     }
 
     /**
@@ -690,6 +737,22 @@ class JsonGenerator {
             });
         }
         return $extraData;
+    }
+    /**
+     * @param array $l2l3Data
+     * @return array
+     */
+    protected function stringifyL2L3Data(&$l2l3Data) {
+        if (is_array($l2l3Data)) {
+            array_walk($l2l3Data, function(&$v) {
+                if (is_array($v)) {
+                    $this->stringifyL2L3Data($v);
+                } else {
+                    $v = (string)$v;
+                }
+            });
+        }
+        return $l2l3Data;
     }
 
     /**
