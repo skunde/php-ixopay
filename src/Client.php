@@ -181,6 +181,11 @@ class Client
     protected $generator;
 
     /**
+     * @var bool
+     */
+    protected $newAlgo = false;
+
+    /**
      * @param string $username
      * @param string $password
      * @param string $apiKey
@@ -188,13 +193,14 @@ class Client
      * @param string $language
      * @param bool   $testMode - DEPRECATED
      */
-    public function __construct($username, $password, $apiKey, $sharedSecret, $language = null, $testMode = false) {
+    public function __construct($username, $password, $apiKey, $sharedSecret, $language = null, $testMode = false, $newAlgo = false) {
         $this->username = $username;
         $this->setPassword($password);
         $this->apiKey = $apiKey;
         $this->sharedSecret = $sharedSecret;
         $this->language = $language;
         $this->testMode = $testMode;
+        $this->newAlgo = $newAlgo;
     }
 
 	/**
@@ -694,7 +700,7 @@ class Client
         $curl = new CurlClient();
         $curl ->setCustomHeaders($this->customRequestHeaders)
             ->setCustomCurlOptions($this->customCurlOptions);
-        $curl->signJson($sharedSecret, $url, $jsonBody, $type, false, true)
+        $curl->signJson($sharedSecret, $url, $jsonBody, $type, false, $this->newAlgo)
              ->setAuthentication($username, $password);
 
         if($get){
