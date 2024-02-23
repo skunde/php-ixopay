@@ -192,6 +192,7 @@ class Client
      * @param string $sharedSecret
      * @param string $language
      * @param bool   $testMode - DEPRECATED
+     * @param bool   $newAlgo
      */
     public function __construct($username, $password, $apiKey, $sharedSecret, $language = null, $testMode = false, $newAlgo = false) {
         $this->username = $username;

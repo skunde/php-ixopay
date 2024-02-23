@@ -89,6 +89,27 @@ $connector_shared_secret = "your_generated_connector_shared_secret";
 $client = new Client($api_user, $api_password, $connector_api_key, $connector_shared_secret);
 ```
 
+If you want to use `sha512` as hash algorithm for the security signature you can instantiate the client like this:
+
+```php
+<?php
+
+use Ixopay\Client\Client;
+use Ixopay\Client\Data\Customer;
+use Ixopay\Client\Transaction\Debit;
+use Ixopay\Client\Transaction\Result;
+
+// Include the autoloader (if not already done via Composer autoloader)
+require_once('path/to/initClientAutoload.php');
+
+// Instantiate the "Ixopay\Client\Client" with your credentials
+$api_user = "your_username";
+$api_password = "your_username";
+$connector_api_key = "your_chosen_connector_api_key";
+$connector_shared_secret = "your_generated_connector_shared_secret";
+$client = new Client($api_user, $api_password, $connector_api_key, $connector_shared_secret, null, true);
+```
+
 ### Process a debit transaction
 
 Once you instantiated a [client with credentials](#setting-up-credentials),
@@ -169,8 +190,8 @@ This repository is available under the [MIT License][license].
 <!-- references -->
 [license]: LICENSE.md
 [ixopay]: https://ixopay.com
-[ixopay-docs-api]: https://gateway.ixopay.com/documentation/apiv3
-[ixopay-docs-gateway]: https://gateway.ixopay.com/documentation/gateway
+[ixopay-docs-api]: https://documentation.ixopay.com/api/transaction/transaction-api
+[ixopay-docs-gateway]: https://documentation.ixopay.com
 [repo-new-issue]: https://github.com/ixopay/php-ixopay/issues/new/choose
 [packagist-shield]: https://img.shields.io/packagist/v/ixopay/ixopay-php-client.svg
 [packagist-url]: https://packagist.org/packages/ixopay/ixopay-php-client
