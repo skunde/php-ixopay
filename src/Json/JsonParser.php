@@ -249,8 +249,8 @@ class JsonParser {
         $result->setCurrency($this->arrGet($json, 'currency'));
         $result->setMerchantMetaData($this->arrGet($json, 'merchantMetaData'));
         $result->setExtraData($this->arrGet($json, 'extraData'));
-        $result->setErrorMessage($this->arrGet($json, 'errorMessage'));
-        $result->setErrorCode($this->arrGet($json, 'errorCode'));
+        $result->setErrorMessage($this->arrGet($json, 'errorMessage') ?: $this->arrGet($json, 'message'));
+        $result->setErrorCode($this->arrGet($json, 'errorCode') ?: $this->arrGet($json, 'code'));
         $result->setAdapterMessage($this->arrGet($json, 'adapterMessage'));
         $result->setAdapterCode($this->arrGet($json, 'adapterCode'));
 
@@ -261,10 +261,6 @@ class JsonParser {
         }
 
         if ($this->arrGet($json, 'message') || $this->arrGet($json, 'code')) {
-            $result->setErrorMessage($this->arrGet($json, 'message'));
-            $result->setErrorCode($this->arrGet($json, 'code'));
-            $result->setAdapterMessage($this->arrGet($json, 'adapterMessage'));
-            $result->setAdapterCode($this->arrGet($json, 'adapterCode'));
             $result->addError(
                 new Error(
                     $this->arrGet($json, 'message'),
